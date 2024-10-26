@@ -6,10 +6,10 @@ import numpy as np
 # where w is the weight we are trying to find in training
 # ultimately we want our model to adjust the weight to get closer and closer to 2 after each epoch
 
-X = np.array([1,2,3,4], dtype=np.float32) # input data
-Y = np.array([2,4,6,8], dtype=np.float32) # ground truths / actual output
+X = torch.tensor([1,2,3,4], dtype=torch.float32) # input data
+Y = torch.tensor([2,4,6,8], dtype=torch.float32) # ground truths / actual output
 
-w = 0.0
+w = torch.tensor(1.0, dtype=torch.float32, requires_grad=True)
 
 # backpropogation(optimization algorithm)
 
@@ -29,15 +29,25 @@ def gradient(y_predicted, y, x):
 
 # train 
 learning_rate = 0.01
-n_iter = 10
+n_iter = 100
 
 for epoch in range(n_iter):
     y_pred = y_prediction(X)
 
-    curr_loss = loss(y_pred, Y)
+    l = loss(y_pred, Y)
 
-    dw = gradient(y_pred, Y, X)
+    # dw = gradient(y_pred, Y, X)
+    # same as:
 
-    w -= learning_rate * dw
+    l.backward()
 
-    print(f'prediction: {y_pred} loss: {curr_loss:.3f} gradient: {dw:.3f} weight: {w:.3f}')
+    # w -= learning_rate * dw
+    # same as:
+    with torch.no_grad():
+        w -= learning_rate * w.grad
+    
+    # zero gradients
+    w.grad.zero_()
+
+    if epoch % 10 == 0:
+        print(f'prediction: {y_pred} loss: {l:.3f} gradient: {w:.3f} weight: {w:.3f}')
