@@ -14,7 +14,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 num_epochs = 4
 batch_size = 4
-learning_rate = 0.001
+learning_rate = 0.005
 num_channels = 3 # 3 channels for each color now.
 hidden_size = 6
 filter_size = 5 # filter size (5x5)
@@ -36,31 +36,31 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 class ConvNet(nn.Module):
-    def __init__(self, num_channels, hidden_size, output_size):
+    def __init__(self, output_size):
         super(ConvNet, self).__init__()
         # output after convolution formula: ((W - F) + 2P) / (S + 1) 
         # w = input size, f = filter size, p = padding(zero in this case)
         # s = stride
         # => (32 - 5 + 0)/1 + 1 = 28 
-        self.convL1 = nn.Conv2d(num_channels, hidden_size, filter_size)
-
+        self.convL1 = nn.Conv2d(3, 6, 5)
         # will reduce size by two (pooling size)
-        self.pooling = nn.MaxPool2d(2, 3)
-        self.convL2 = nn.Conv2d(hidden_size, 16, filter_size)
+        self.pooling = nn.MaxPool2d(2, 2)
+        self.convL2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16*5*5, 120)
-        self.fc1 = nn.Linear(120, 84)
-        self.fc1 = nn.Linear(84, output_size)
-        # self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, output_size)
+        self.relu = nn.ReLU()
 
     def forward(self, x):
-        output = self.convL1(x)
-        output = self.relu(output)
-        output = self.pooling(output)
-        output = self.convL2(output)
+        conv1 = self.pooling(self.relu(self.convL1(x)))
+        conv2 = self.pooling(self.relu(self.convL2(conv1)))
+        conv2 = conv2.view(-1, 16*5*5)
+        lin1 = self.relu(self.fc1(conv2))
+        lin2 = self.relu(self.fc2(lin1))
+        lin3 = self.fc3(lin2)
+        return lin3
 
-        return output
-
-model = ConvNet(num_channels, hidden_size, 10).to(device)
+model = ConvNet(10).to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
@@ -82,5 +82,5 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        if (i + 1) % 100:
+        if (i + 1) % 1000 == 0:
             print(f'step {i + 1} / {n_total_steps} loss = {loss.item():.4f}')
