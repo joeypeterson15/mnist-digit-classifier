@@ -43,10 +43,8 @@ class ConvNet(nn.Module):
         # output after convolution formula: ((W - F) + 2P) / (S + 1) 
         # w = input size, f = filter size, p = padding(zero in this case)
         # s = stride
-        # => (32 - 5 + 0)/1 + 1 = 28 
         self.convL1 = nn.Conv2d(3, 6, 5)
-        # will reduce size by two (pooling size)
-        self.pooling = nn.MaxPool2d(2, 2)
+        self.pooling = nn.MaxPool2d(2, 2) # will reduce size by two (pooling size)
         self.convL2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16*5*5, 120)
         self.fc2 = nn.Linear(120, 84)
@@ -70,13 +68,8 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 n_total_steps = len(train_loader)
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
-        # convert images to write shape. images are in RGB so 32x32x3
-        # essentially we're taking each image with 32 rows and 32 columns
-        # and taking out the rows and columns to have one big sample list
         images = images.to(device)
         labels = labels.to(device)
-        # images = images.reshape([-1, 32*32*3])
-        # labels = images.reshape([-1, 32*32*3])
         output = model(images)
         loss = criterion(output, labels)
 
