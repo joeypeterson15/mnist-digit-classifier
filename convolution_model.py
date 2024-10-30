@@ -33,6 +33,8 @@ train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                           shuffle=False)
 
+print('data size:', train_loader)
+
 classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 class ConvNet(nn.Module):
